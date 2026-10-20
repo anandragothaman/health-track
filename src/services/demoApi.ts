@@ -48,10 +48,13 @@ function makeSeed(): Store {
     id, family_id: FAMILY_ID, full_name, date_of_birth: dob, gender, avatar_color: color,
     settings: normalizeSettings(settings), created_at: created,
   });
+  const ravi = uid();
+  const meena = uid();
+  const arjun = uid();
   const members = [
-    member('demo-ravi', 'Ravi Kumar', '1958-04-12', 'male', 'blue', { glucosePreset: 'ada' }),
-    member('demo-meena', 'Meena Kumar', '1962-09-30', 'female', 'teal', { glucosePreset: 'nondiabetic' }),
-    member('demo-arjun', 'Arjun Kumar', '1990-01-15', 'male', 'violet', { glucosePreset: 'nondiabetic', glucoseUnit: 'mmol/L' }),
+    member(ravi, 'Ravi Kumar', '1958-04-12', 'male', 'blue', { glucosePreset: 'ada' }),
+    member(meena, 'Meena Kumar', '1962-09-30', 'female', 'teal', { glucosePreset: 'nondiabetic' }),
+    member(arjun, 'Arjun Kumar', '1990-01-15', 'male', 'violet', { glucosePreset: 'nondiabetic', glucoseUnit: 'mmol/L' }),
   ];
   const bp: BpReading[] = [];
   const glucose: GlucoseReading[] = [];
@@ -73,21 +76,21 @@ function makeSeed(): Store {
 
   for (let d = 0; d < 45; d++) {
     const day = addDays(startOfDay(now), -d);
-    if (d % 9 !== 4) addBp('demo-ravi', at(day, 7, 50 + r(0, 9)), 'morning', r(132, 14), r(82, 8), r(68, 10));
-    if (d % 5 !== 2) addBp('demo-ravi', at(day, 14, r(0, 50)), 'afternoon', r(126, 12), r(79, 8), r(72, 10));
-    addBp('demo-ravi', at(day, 20, r(0, 45)), 'evening', r(128, 14), r(80, 9), r(66, 8));
-    addG('demo-ravi', at(day, 7, 15), 'fasting', r(110, 35), 'mg/dL');
-    addG('demo-ravi', at(day, 14, 30), 'after_lunch', r(145, 55), 'mg/dL');
-    addG('demo-ravi', at(day, 22, 0), 'bedtime', r(120, 40), 'mg/dL');
+    if (d % 9 !== 4) addBp(ravi, at(day, 7, 50 + r(0, 9)), 'morning', r(132, 14), r(82, 8), r(68, 10));
+    if (d % 5 !== 2) addBp(ravi, at(day, 14, r(0, 50)), 'afternoon', r(126, 12), r(79, 8), r(72, 10));
+    addBp(ravi, at(day, 20, r(0, 45)), 'evening', r(128, 14), r(80, 9), r(66, 8));
+    addG(ravi, at(day, 7, 15), 'fasting', r(110, 35), 'mg/dL');
+    addG(ravi, at(day, 14, 30), 'after_lunch', r(145, 55), 'mg/dL');
+    addG(ravi, at(day, 22, 0), 'bedtime', r(120, 40), 'mg/dL');
 
-    addBp('demo-meena', at(day, 8, r(0, 30)), 'morning', r(112, 12), r(70, 8), r(70, 8));
-    addBp('demo-meena', at(day, 19, 30 + r(0, 25)), 'evening', r(114, 10), r(72, 6), r(74, 8));
-    if (d % 3 === 0) addG('demo-meena', at(day, 7, 30), 'fasting', r(84, 14), 'mg/dL');
+    addBp(meena, at(day, 8, r(0, 30)), 'morning', r(112, 12), r(70, 8), r(70, 8));
+    addBp(meena, at(day, 19, 30 + r(0, 25)), 'evening', r(114, 10), r(72, 6), r(74, 8));
+    if (d % 3 === 0) addG(meena, at(day, 7, 30), 'fasting', r(84, 14), 'mg/dL');
 
     if (d % 4 === 0) {
-      addBp('demo-arjun', at(day, 9, 0), 'morning', r(118, 10), r(74, 8), r(62, 10));
-      addG('demo-arjun', at(day, 8, 30), 'before_breakfast', Math.round((4.6 + rand()) * 10) / 10, 'mmol/L');
-      addG('demo-arjun', at(day, 21, 0), 'after_dinner', Math.round((5.5 + rand() * 1.8) * 10) / 10, 'mmol/L');
+      addBp(arjun, at(day, 9, 0), 'morning', r(118, 10), r(74, 8), r(62, 10));
+      addG(arjun, at(day, 8, 30), 'before_breakfast', Math.round((4.6 + rand()) * 10) / 10, 'mmol/L');
+      addG(arjun, at(day, 21, 0), 'after_dinner', Math.round((5.5 + rand() * 1.8) * 10) / 10, 'mmol/L');
     }
   }
   return { familyName: 'Kumar Family (demo)', inviteCode: 'DEMO00000000', members, bp, glucose };
@@ -101,8 +104,20 @@ function load(): Store {
   if (raw) {
     try {
       const parsed = JSON.parse(raw) as Store;
-      parsed.members = parsed.members.map((m) => ({ ...m, settings: normalizeSettings(m.settings) }));
+      // Older demo data used name-based ids ("demo-ravi"); give them neutral ids.
+      const remap = new Map<string, string>();
+      parsed.members = parsed.members.map((m) => {
+        const id = m.id.startsWith('demo-') ? uid() : m.id;
+        if (id !== m.id) remap.set(m.id, id);
+        return { ...m, id, settings: normalizeSettings(m.settings) };
+      });
+      if (remap.size) {
+        const fix = <T extends { member_id: string }>(r: T) => ({ ...r, member_id: remap.get(r.member_id) ?? r.member_id });
+        parsed.bp = parsed.bp.map(fix);
+        parsed.glucose = parsed.glucose.map(fix);
+      }
       store = parsed;
+      if (remap.size) save();
       return store;
     } catch {
       /* fall through to a fresh seed */
