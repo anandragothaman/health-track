@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Colour tokens (RGB triplets). Dark mode only swaps these values. */
+:root {
+  --canvas: 241 245 249;
+  --surface: 255 255 255;
+  --subtle: 248 250 252;
+  --line: 203 213 225;
+  --ink: 15 23 42;
+  --muted: 71 85 105;
+  --primary: 29 78 216;
+  --primary-soft: 219 234 254;
+  --primary-ink: 255 255 255;
+  --accent: 15 118 110;
+  --accent-soft: 204 251 241;
+  --ok: 21 128 61;
+  --ok-soft: 220 252 231;
+  --warn: 161 98 7;
+  --warn-soft: 254 243 199;
+  --high: 194 65 12;
+  --high-soft: 255 237 213;
+  --crit: 185 28 28;
+  --crit-soft: 254 226 226;
+  --info: 3 105 161;
+  --info-soft: 224 242 254;
+  color-scheme: light;
+}
+
+.dark {
+  --canvas: 3 7 18;
+  --surface: 17 24 39;
+  --subtle: 31 41 55;
+  --line: 55 65 81;
+  --ink: 241 245 249;
+  --muted: 156 163 175;
+  --primary: 96 165 250;
+  --primary-soft: 30 58 138;
+  --primary-ink: 3 7 18;
+  --accent: 45 212 191;
+  --accent-soft: 19 78 74;
+  --ok: 74 222 128;
+  --ok-soft: 20 83 45;
+  --warn: 250 204 21;
+  --warn-soft: 113 63 18;
+  --high: 251 146 60;
+  --high-soft: 124 45 18;
+  --crit: 248 113 113;
+  --crit-soft: 127 29 29;
+  --info: 56 189 248;
+  --info-soft: 12 74 110;
+  color-scheme: dark;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+html.text-large {
+  font-size: 19px;
+}
+
+body {
+  @apply bg-canvas text-ink antialiased;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line/60 bg-surface p-4 shadow-card sm:p-5;
+  }
+  .btn {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-4 py-2 text-base font-semibold
+      transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
+      focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply btn bg-primary text-primary-ink hover:bg-primary/90;
+  }
+  .btn-accent {
+    @apply btn bg-accent text-white hover:bg-accent/90 dark:text-canvas;
+  }
+  .btn-secondary {
+    @apply btn border border-line bg-surface text-ink hover:bg-subtle;
+  }
+  .btn-danger {
+    @apply btn bg-crit text-white hover:bg-crit/90 dark:text-canvas;
+  }
+  .btn-ghost {
+    @apply btn text-muted hover:bg-subtle hover:text-ink;
+  }
+  .input {
+    @apply block min-h-[48px] w-full rounded-xl border border-line bg-surface px-3 py-2 text-base text-ink
+      placeholder:text-muted/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+  .chip {
+    @apply inline-flex min-h-[40px] items-center rounded-full border px-3.5 text-sm font-medium transition-colors
+      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+  }
+  .chip-on {
+    @apply chip border-primary bg-primary text-primary-ink;
+  }
+  .chip-off {
+    @apply chip border-line bg-surface text-ink hover:bg-subtle;
+  }
+}
+
+@media print {
+  html, body { background: #fff !important; color: #000 !important; }
+  .card { box-shadow: none !important; break-inside: avoid; }
+  @page { margin: 14mm; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
