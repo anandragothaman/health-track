@@ -93,7 +93,7 @@ function makeSeed(): Store {
       addG(arjun, at(day, 21, 0), 'after_dinner', Math.round((5.5 + rand() * 1.8) * 10) / 10, 'mmol/L');
     }
   }
-  return { familyName: 'Kumar Family (demo)', inviteCode: 'DEMO00000000', members, bp, glucose };
+  return { familyName: 'Anand Family (demo)', inviteCode: 'DEMO00000000', members, bp, glucose };
 }
 
 let store: Store | null = null;
