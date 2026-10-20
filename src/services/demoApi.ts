@@ -116,8 +116,10 @@ function load(): Store {
         parsed.bp = parsed.bp.map(fix);
         parsed.glucose = parsed.glucose.map(fix);
       }
+      const renamed = parsed.familyName === 'Kumar Family (demo)';
+      if (renamed) parsed.familyName = 'Anand Family (demo)';
       store = parsed;
-      if (remap.size) save();
+      if (remap.size || renamed) save();
       return store;
     } catch {
       /* fall through to a fresh seed */
