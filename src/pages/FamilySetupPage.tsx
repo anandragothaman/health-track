@@ -7,10 +7,13 @@ import { AuthShell } from './AuthShell';
 
 type Mode = 'create' | 'join';
 
+/** Invite codes are 12 letters/digits, optionally shown as XXXX-XXXX-XXXX. */
+const looksLikeInviteCode = (s: string) => /^[A-F0-9]{4}-?[A-F0-9]{4}-?[A-F0-9]{4}$/i.test(s.trim());
+
 export default function FamilySetupPage() {
   const { user, signOut } = useAuth();
   const { reload } = useFamily();
-  const [mode, setMode] = useState<Mode>('create');
+  const [mode, setMode] = useState<Mode>('join');
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -23,6 +26,12 @@ export default function FamilySetupPage() {
     try {
       if (mode === 'create') {
         if (!name.trim()) throw new Error('Please enter a family name.');
+        if (looksLikeInviteCode(name)) {
+          setMode('join');
+          setCode(name.trim());
+          setName('');
+          throw new Error('That looks like an invite code, so we switched to “Join with invite code”. Tap “Join family” to continue.');
+        }
         await api.createFamily(name.trim().slice(0, 80));
       } else {
         if (!code.trim()) throw new Error('Please enter the invite code.');
@@ -42,13 +51,18 @@ export default function FamilySetupPage() {
         value={mode}
         onChange={setMode}
         options={[
-          { value: 'create', label: 'Start a new family' },
           { value: 'join', label: 'Join with invite code' },
+          { value: 'create', label: 'Start a new family' },
         ]}
       />
       <form onSubmit={submit} className="mt-5 space-y-4" noValidate>
+        <p className="text-sm text-muted">
+          {mode === 'join'
+            ? 'Someone in your family already uses the app? Enter the invite code they gave you.'
+            : 'Only for the first person in your family. Everyone else should join with an invite code.'}
+        </p>
         {mode === 'create' ? (
-          <Field id="family-name" label="Family name" hint="For example “The Kumar Family”. You can change it later.">
+          <Field id="family-name" label="Family name" hint="For example “The Anand Family”. You can change it later.">
             <input id="family-name" className="input" maxLength={80} value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
         ) : (
