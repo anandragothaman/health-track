@@ -38,7 +38,13 @@ export function LoginPage() {
       }
     } catch (err) {
       const msg = errorMessage(err);
-      setError(/invalid login credentials/i.test(msg) ? 'Email or password is incorrect.' : msg);
+      setError(
+        /invalid login credentials/i.test(msg)
+          ? 'Email or password is incorrect.'
+          : /signups? not allowed/i.test(msg)
+            ? 'New accounts are closed. Ask the family owner if you need access.'
+            : msg,
+      );
     } finally {
       setBusy(false);
     }
